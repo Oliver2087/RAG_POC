@@ -90,6 +90,3 @@ Output excerpt:
   "summary": "Patient admitted with ascites-related abdominal fullness and pain; paracentesis removed 4.3 L, spironolactone was stopped, and furosemide was increased."
 }
 ```
-
-Do not commit `.env`, datasets, or generated outputs. This project is not a
-clinical decision system.

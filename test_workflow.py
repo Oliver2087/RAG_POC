@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from extractionAgent import ClinicalExtract
+from extractAgent.extractionAgent import ClinicalExtract
 from orchestrator import process_record
 
 

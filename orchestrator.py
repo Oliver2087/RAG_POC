@@ -2,10 +2,10 @@
 import pandas as pd
 from pathlib import Path
 
-from extractionAgent import ClinicalExtract
-from reviewAgent import ClinicalReview
-from extractTools import load_record, clean_clinical_text, extract_clinical_record, save_result
-from reviewTools import repair_clinical_record, review_clinical_record
+from extractAgent.extractionAgent import ClinicalExtract
+from reviewAgent.reviewAgent import ClinicalReview
+from extractAgent.extractTools import load_record, clean_clinical_text, extract_clinical_record, save_result
+from reviewAgent.reviewTools import repair_clinical_record, review_clinical_record
 
 
 

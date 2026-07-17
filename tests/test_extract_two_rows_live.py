@@ -7,7 +7,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from extractTools import save_result
+from extractAgent.extractTools import save_result
 from orchestrator import process_clinical_text
 
 

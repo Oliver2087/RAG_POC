@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import ValidationError
 
-from extractionAgent import ClinicalExtract
-from reviewAgent import ClinicalReview
-from reviewPrompt import REPAIR_SYSTEM_PROMPT, REVIEW_SYSTEM_PROMPT
+from extractAgent.extractionAgent import ClinicalExtract
+from reviewAgent.reviewAgent import ClinicalReview
+from reviewAgent.reviewPrompt import REPAIR_SYSTEM_PROMPT, REVIEW_SYSTEM_PROMPT
 
 
 load_dotenv()

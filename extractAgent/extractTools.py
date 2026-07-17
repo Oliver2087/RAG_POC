@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import ValidationError
 
-from extractionAgent import ClinicalExtract
-from extractPrompt import EXTRACT_SYSTEM_PROMPT
+from extractAgent.extractionAgent import ClinicalExtract
+from extractAgent.extractPrompt import EXTRACT_SYSTEM_PROMPT
 
 load_dotenv()
 
