@@ -21,12 +21,14 @@ CSV row
 ## Project Structure
 
 ```text
-extractionAgent.py      Pydantic schema for extracted clinical records
-extractPrompt.py        Extraction prompt
-extractTools.py         Loading, cleaning, extraction, and save helpers
-reviewAgent.py          Pydantic schema for review output
-reviewPrompt.py         Review and repair prompts
-reviewTools.py          Review and repair API calls
+extractAgent/
+  extractionAgent.py    Pydantic schema for extracted clinical records
+  extractPrompt.py      Extraction prompt
+  extractTools.py       Loading, cleaning, extraction, and save helpers
+reviewAgent/
+  reviewAgent.py        Pydantic schema for review output
+  reviewPrompt.py       Review and repair prompts
+  reviewTools.py        Review and repair API calls
 orchestrator.py         End-to-end pipeline functions
 main.py                 CLI entrypoint for processing dataset rows
 run_prototype.ps1       Example script for the local dataset
