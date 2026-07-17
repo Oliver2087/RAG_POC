@@ -1,134 +1,95 @@
 # RAG POC
 
-A proof-of-concept AI pipeline for extracting structured clinical information
-from unstructured healthcare documents.
+This is a proof-of-concept pipeline for turning unstructured clinical notes into
+validated structured JSON. Despite the repository name, the current prototype is
+not a retrieval system yet; it is an extraction, review, and repair workflow.
 
-The prototype reads clinical text from a CSV dataset, extracts a structured
-clinical record, reviews the extraction for meaningful issues, and optionally
-repairs the record when the review finds problems.
+## Approach
 
-## Workflow
-
-```text
-CSV row
--> clean clinical text
--> extract ClinicalExtract
--> review ClinicalReview
--> repair ClinicalExtract if review needs_review
--> save JSON outputs
-```
-
-## Project Structure
+The pipeline reads a CSV row containing clinical text, cleans the text, and asks
+an OpenAI model to produce a `ClinicalExtract` object. A second review pass
+compares that JSON against the original source. If the review returns
+`needs_review`, a repair pass receives the source text, original extraction, and
+review issues, then returns a corrected final record.
 
 ```text
-extractAgent/
-  extractionAgent.py    Pydantic schema for extracted clinical records
-  extractPrompt.py      Extraction prompt
-  extractTools.py       Loading, cleaning, extraction, and save helpers
-reviewAgent/
-  reviewAgent.py        Pydantic schema for review output
-  reviewPrompt.py       Review and repair prompts
-  reviewTools.py        Review and repair API calls
-orchestrator.py         End-to-end pipeline functions
-main.py                 CLI entrypoint for processing dataset rows
-run_prototype.ps1       Example script for the local dataset
-tests/                  Live/manual test scripts
-test_workflow.py        Unit tests for the local workflow
+clinical text -> extract JSON -> review JSON -> repair if needed -> final JSON
 ```
 
-## Setup
-
-Create and activate a virtual environment:
-
-```powershell
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```powershell
-pip install -r requirements.txt
-```
-
-Create a `.env` file:
-
-```text
-OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=your_model_here
-```
-
-Example model values depend on your OpenAI account access.
-
-## Usage
-
-Run the prototype against a CSV dataset:
+Run the prototype with:
 
 ```powershell
 .\venv\Scripts\python.exe main.py .\dataset\BHC_MIMIC-IV.csv --text-column input --rows 0,1,2,3 --output-dir .\outputs\prototype
 ```
 
-Or use the included local runner:
+## Models And Tools
 
-```powershell
-.\run_prototype.ps1
-```
+- OpenAI Responses API with structured parsing
+- Pydantic schemas for validated extraction and review outputs
+- pandas for reading CSV input
+- python-dotenv for loading `OPENAI_API_KEY` and `OPENAI_MODEL`
 
-The CSV must contain a text column. By default, the prototype expects the column
-to be named `input`.
+The main schemas live in `extractAgent/` and `reviewAgent/`. The CLI entrypoint
+is `main.py`.
 
-## Outputs
+## Assumptions
 
-For each processed row, the pipeline writes:
+- Input data is a CSV with one text column, defaulting to `input`.
+- The model should extract only information supported by the source document.
+- Patient suggestions must be practical and source-supported, not new medical
+advice.
+- Lab interpretations should be conservative when the source does not clearly
+state normality or abnormality.
+- Final outputs are prototype artifacts and still require human clinical review.
+
+## Example
+
+Input:
 
 ```text
-record_<row_id>.json          Original extracted clinical record
-record_<row_id>_review.json   Review result
-record_<row_id>_final.json    Final record after repair, or unchanged if review passed
+Discharge Instructions: You were admitted with abdominal fullness and pain from
+ascites. You had a diagnostic and therapeutic paracentesis with 4.3 L removed.
+Your spironolactone was discontinued because your potassium was high. Your lasix
+was increased to 40mg daily.
 ```
 
-The extracted record includes:
+Output excerpt:
 
-- diagnoses
-- medications
-- laboratory results
-- allergies
-- symptoms
-- procedures
-- follow-up actions
-- patient suggestions
-- risk flags
-- warnings
-- summary
-
-## Tests
-
-Run the unit tests:
-
-```powershell
-.\venv\Scripts\python.exe -m unittest test_workflow.py
+```json
+{
+  "diagnoses": [
+    {
+      "name": "Ascites",
+      "status": "active",
+      "evidence": "admitted with abdominal fullness and pain from ascites"
+    }
+  ],
+  "medications": [
+    {
+      "name": "Furosemide",
+      "dose": "40 mg daily",
+      "previous_dose": null,
+      "status": "changed"
+    },
+    {
+      "name": "Spironolactone",
+      "dose": null,
+      "previous_dose": null,
+      "status": "stopped"
+    }
+  ],
+  "procedures": [
+    {
+      "name": "Paracentesis",
+      "details": "4.3 L removed"
+    }
+  ],
+  "patient_suggestions": [
+    "Follow documented discharge instructions and planned follow-up."
+  ],
+  "summary": "Patient admitted with ascites-related abdominal fullness and pain; paracentesis removed 4.3 L, spironolactone was stopped, and furosemide was increased."
+}
 ```
 
-Live API test scripts are in `tests/`. They call the OpenAI API and may incur
-costs:
-
-```powershell
-.\venv\Scripts\python.exe tests\test_openai_live.py
-.\venv\Scripts\python.exe tests\test_extract_two_rows_live.py
-```
-
-## Data And Safety Notes
-
-The repository intentionally ignores:
-
-- `.env`
-- `venv/`
-- `dataset/`
-- `outputs/`
-
-Do not commit API keys, real patient data, or generated clinical outputs unless
-they are explicitly safe to share.
-
-This project is a prototype for structured extraction and quality control. It
-does not provide medical advice and should not be used for clinical decisions
-without appropriate validation and human review.
+Do not commit `.env`, datasets, or generated outputs. This project is not a
+clinical decision system.
